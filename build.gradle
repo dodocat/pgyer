@@ -1,0 +1,110 @@
+apply plugin: 'groovy'
+apply plugin: 'maven'
+
+group = 'org.quanqi'
+archivesBaseName = 'pgyer'
+version = '0.1.0'
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  compile gradleApi()
+  groovy localGroovy()
+  compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
+  compile 'org.json:json:20090211'
+  compile 'org.apache.httpcomponents:httpmime:4.2.5'
+  runtime 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
+  runtime 'org.json:json:20090211'
+  runtime 'org.apache.httpcomponents:httpmime:4.2.5'
+}
+
+task javadocJar(type: Jar, dependsOn: groovydoc) {
+  classifier = 'javadoc'
+  from "${buildDir}/javadoc"
+}
+
+task sourcesJar(type: Jar) {
+  from sourceSets.main.allSource
+  classifier = 'sources'
+}
+
+artifacts {
+  archives jar
+  archives javadocJar
+  archives sourcesJar
+}
+
+// local upload
+
+uploadArchives {
+  repositories {
+    mavenDeployer {
+      repository(url: 'file://' + new File(System.getProperty('user.home'), '.m2/repository').absolutePath)
+    }
+  }
+}
+
+
+
+
+/*
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+
+            beforeDeployment { deployment -> signing.signPom(deployment) }
+
+            if (project.hasProperty('NEXUS_USERNAME')) {
+                snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots") {
+                    authentication(userName: project.getProperty('NEXUS_USERNAME'),
+                            password: project.getProperty('NEXUS_PASSWORD'))
+                }
+
+                repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2") {
+                    authentication(userName: project.getProperty('NEXUS_USERNAME'),
+                            password: project.getProperty('NEXUS_PASSWORD'))
+                }
+            }
+            uniqueVersion = false
+
+            pom.project {
+
+                parent {
+                    groupId 'org.sonatype.oss'
+                    artifactId 'oss-parent'
+                    version '7'
+                }
+
+                name 'Gradle android-signing plugin'
+                packaging 'jar'
+                description 'A plugin used for automatic keystore configration.'
+                url 'https://github.com/dodocat/android-signing'
+
+                scm {
+                    url 'https://github.com/dodocat/android-signing'
+                    connection 'scm:git:https://github.com/dodocat/android-signing.git'
+                    developerConnection 'scm:git:https://github.com/dodocat/android-signing.git'
+                }
+
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        distribution 'repo'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'dodocat'
+                        name 'Cindy'
+                    }
+                }
+            }
+        }
+    }
+}
+*/
