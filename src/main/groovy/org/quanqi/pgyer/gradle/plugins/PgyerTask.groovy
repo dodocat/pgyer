@@ -1,29 +1,26 @@
 package org.quanqi.pgyer.gradle.plugins
 
-import org.gradle.api.GradleException
+import com.squareup.okhttp.MediaType
+import com.squareup.okhttp.MultipartBuilder
+import com.squareup.okhttp.OkHttpClient
+import com.squareup.okhttp.Request
+import com.squareup.okhttp.RequestBody
+import com.squareup.okhttp.Response
 import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
 import org.gradle.api.Project
-import org.apache.http.protocol.HTTP
-import org.apache.http.HttpEntity
-import org.apache.http.HttpResponse
-import org.apache.http.client.HttpClient
-import org.apache.http.impl.conn.ProxySelectorRoutePlanner
-import org.apache.http.client.methods.HttpPost
-import org.apache.http.impl.client.DefaultHttpClient
-import org.apache.http.entity.mime.MultipartEntity
-import org.apache.http.entity.mime.content.StringBody
-import org.apache.http.entity.mime.content.FileBody
 import org.json.JSONObject
-import java.nio.charset.Charset
+
+import java.util.concurrent.TimeUnit
 
 class PgyerTask extends DefaultTask {
     private final String API_END_POINT = "http://www.pgyer.com/apiv1"
 
-    private void upload(Project project, List<Apk> apks) {
+    void upload(Project project, List<Apk> apks) {
         String endPoint = getEndPoint(project)
 
         HashMap<String, JSONObject> result = httpPost(endPoint, apks)
-        for(Apk apk in apks) {
+        for (Apk apk in apks) {
             JSONObject json = result.get(apk.name)
             errorHandling(apk, json)
             println "${apk.name} result: ${json.toString()}"
@@ -31,13 +28,10 @@ class PgyerTask extends DefaultTask {
     }
 
     private void errorHandling(Apk apk, JSONObject json) {
-
         print(json)
     }
 
-
     private String getEndPoint(Project project) {
-
         String uKey = project.pgyer.uKey
         String _api_key = project.pgyer._api_key
         if (uKey == null || _api_key == null) {
@@ -47,53 +41,50 @@ class PgyerTask extends DefaultTask {
         return endPoint
     }
 
-    private static HttpClient getHttpClient() {
-        HttpClient httpClient = new DefaultHttpClient()
-
-        ProxySelectorRoutePlanner routePlanner =
-            new ProxySelectorRoutePlanner(httpClient.getConnectionManager().getSchemeRegistry(), ProxySelector.getDefault());
-        httpClient.setRoutePlanner(routePlanner);
-
-        return httpClient;
-    }
-
     private HashMap<String, JSONObject> httpPost(String endPoint, List<Apk> apks) {
         HashMap<String, JSONObject> result = new HashMap<String, JSONObject>()
-        for(Apk apk in apks) {
-            HttpClient httpClient = getHttpClient()
-            HttpPost httpPost = new HttpPost(endPoint)
+        OkHttpClient client = new OkHttpClient();
+        client.setConnectTimeout(10, TimeUnit.SECONDS);
+        client.setWriteTimeout(300, TimeUnit.SECONDS);
+        client.setReadTimeout(30, TimeUnit.SECONDS);
 
-            MultipartEntity request_entity = new MultipartEntity()
-            Charset charset = Charset.forName(HTTP.UTF_8)
+        for (Apk apk in apks) {
+            MultipartBuilder multipartBuilder = new MultipartBuilder()
+                    .type(MultipartBuilder.FORM)
 
-            File file = apk.file
-            request_entity.addPart("file", new FileBody(file.getAbsoluteFile()))
-            request_entity.addPart("_api_key", new StringBody(project.pgyer._api_key, charset))
-            request_entity.addPart("uKey", new StringBody(project.pgyer.uKey))
+
+            multipartBuilder.addFormDataPart("_api_key", new String(project.pgyer._api_key))
+            multipartBuilder.addFormDataPart("uKey", new String(project.pgyer.uKey))
+
+
+            multipartBuilder.addFormDataPart("file",
+                    apk.file.name,
+                    RequestBody.create(
+                            MediaType.parse("application/vnd.android.package-archive"),
+                            apk.file)
+            )
 
             HashMap<String, String> params = apk.getParams()
             for (String key : params.keySet()) {
                 println("add part key: " + key + " value: " + params.get(key))
-                request_entity.addPart(key, new StringBody(params.get(key), charset))
+                multipartBuilder.addFormDataPart(key, params.get(key))
             }
 
+            Request request = new Request.Builder().url(getEndPoint(project)).
+                    post(multipartBuilder.build()).
+                    build()
 
 
-            httpPost.setEntity(request_entity)
+            println("upload apk: " + request.toString())
 
-            HttpResponse response = httpClient.execute(httpPost)
-            HttpEntity entity = response.getEntity()
-
-            if (entity != null) {
-                InputStream is = entity.getContent()
-                BufferedReader reader = new BufferedReader(new InputStreamReader(is))
-                JSONObject json = new JSONObject(reader.readLine())
-                result.put(apk.name, json)
-                try {
-                } finally {
-                    is.close()
-                }
-            }
+            Response response = client.newCall(request).execute();
+            println(response)
+            if (response == null || response.body() == null ) return null;
+            InputStream is = response.body().byteStream();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is))
+            JSONObject json = new JSONObject(reader.readLine())
+            result.put(apk.name, json)
+            is.close()
         }
         return result
     }

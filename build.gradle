@@ -1,39 +1,40 @@
 apply plugin: 'groovy'
 apply plugin: 'maven'
+apply plugin: 'signing'
 
 group = 'org.quanqi'
 archivesBaseName = 'pgyer'
-version = '0.1.0'
+version = '0.1.1-SNAPSHOT'
 
 repositories {
-  mavenCentral()
+    mavenCentral()
 }
 
 dependencies {
-  compile gradleApi()
-  groovy localGroovy()
-  compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
-  compile 'org.json:json:20090211'
-  compile 'org.apache.httpcomponents:httpmime:4.2.5'
-  runtime 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
-  runtime 'org.json:json:20090211'
-  runtime 'org.apache.httpcomponents:httpmime:4.2.5'
+    compile gradleApi()
+    //groovy localGroovy()
+    compile 'org.json:json:20090211'
+    compile 'com.squareup.okhttp:okhttp:2.2.0'
+    compile 'commons-lang:commons-lang:2.6'
+    runtime 'com.squareup.okhttp:okhttp:2.2.0'
+
+    compile 'com.squareup.okhttp:okhttp-urlconnection:2.2.0'
 }
 
 task javadocJar(type: Jar, dependsOn: groovydoc) {
-  classifier = 'javadoc'
-  from "${buildDir}/javadoc"
+    classifier = 'javadoc'
+    from "${buildDir}/javadoc"
 }
 
 task sourcesJar(type: Jar) {
-  from sourceSets.main.allSource
-  classifier = 'sources'
+    from sourceSets.main.allSource
+    classifier = 'sources'
 }
 
 artifacts {
-  archives jar
-  archives javadocJar
-  archives sourcesJar
+    archives jar
+    archives javadocJar
+    archives sourcesJar
 }
 
 // local upload
@@ -47,10 +48,11 @@ uploadArchives {
 }
 
 
-
-
+signing {
+    required { gradle.taskGraph.hasTask("uploadArchives") && hasProperty('signing.keyId') }
+    sign configurations.archives
+}
 /*
-
 uploadArchives {
     repositories {
         mavenDeployer {
@@ -78,15 +80,15 @@ uploadArchives {
                     version '7'
                 }
 
-                name 'Gradle android-signing plugin'
+                name 'Gradle Pugongying Upload Plugin'
                 packaging 'jar'
-                description 'A plugin used for automatic keystore configration.'
-                url 'https://github.com/dodocat/android-signing'
+                description 'A plugin used for upload Pugongying apk.'
+                url 'https://github.com/dodocat/gradle-pgyer-plugin'
 
                 scm {
-                    url 'https://github.com/dodocat/android-signing'
-                    connection 'scm:git:https://github.com/dodocat/android-signing.git'
-                    developerConnection 'scm:git:https://github.com/dodocat/android-signing.git'
+                    url 'https://github.com/dodocat/gradle-pgyer-plugin'
+                    connection 'scm:git:https://github.com/dodocat/gradle-pgyer-plugin.git'
+                    developerConnection 'scm:git:https://github.com/dodocat/gradle-pgyer-plugin.git'
                 }
 
                 licenses {
