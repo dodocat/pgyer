@@ -1,0 +1,25 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'com.deploygate:gradle:0.6.2'
+    }
+}
+apply plugin: 'deploygate'
+
+deploygate {
+    userName = ownerName
+    token = myToken
+
+    apks {
+        example {
+            sourceFile = file("./DeployGateSample.apk")
+
+            //Below is optional
+            message = "example upload deploygate sample apk"
+            visibility = "public" // public or private
+        }
+    }
+}

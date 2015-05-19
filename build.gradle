@@ -4,7 +4,7 @@ apply plugin: 'signing'
 
 group = 'org.quanqi'
 archivesBaseName = 'pgyer'
-version = '0.1.1-SNAPSHOT'
+version = '0.1.1'
 
 repositories {
     mavenCentral()
@@ -52,7 +52,7 @@ signing {
     required { gradle.taskGraph.hasTask("uploadArchives") && hasProperty('signing.keyId') }
     sign configurations.archives
 }
-/*
+
 uploadArchives {
     repositories {
         mavenDeployer {
@@ -109,4 +109,3 @@ uploadArchives {
         }
     }
 }
-*/
