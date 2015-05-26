@@ -45,8 +45,7 @@ class PgyerTask extends DefaultTask {
         HashMap<String, JSONObject> result = new HashMap<String, JSONObject>()
         OkHttpClient client = new OkHttpClient();
         client.setConnectTimeout(10, TimeUnit.SECONDS);
-        client.setWriteTimeout(300, TimeUnit.SECONDS);
-        client.setReadTimeout(30, TimeUnit.SECONDS);
+        client.setReadTimeout(60, TimeUnit.SECONDS);
 
         for (Apk apk in apks) {
             MultipartBuilder multipartBuilder = new MultipartBuilder()
