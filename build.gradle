@@ -4,7 +4,7 @@ apply plugin: 'signing'
 
 group = 'org.quanqi'
 archivesBaseName = 'pgyer'
-version = '0.1.1'
+version = '0.1.2'
 sourceCompatibility = 1.6
 
 repositories {
@@ -40,13 +40,13 @@ artifacts {
 
 // local upload
 
-uploadArchives {
-  repositories {
-    mavenDeployer {
-      repository(url: 'file://' + new File(System.getProperty('user.home'), '.m2/repository').absolutePath)
-    }
-  }
-}
+//uploadArchives {
+//  repositories {
+//    mavenDeployer {
+//      repository(url: 'file://' + new File(System.getProperty('user.home'), '.m2/repository').absolutePath)
+//    }
+//  }
+//}
 
 
 signing {
