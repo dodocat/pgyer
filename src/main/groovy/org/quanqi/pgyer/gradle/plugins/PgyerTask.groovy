@@ -74,11 +74,8 @@ class PgyerTask extends DefaultTask {
                     post(multipartBuilder.build()).
                     build()
 
-
-            println("upload apk: " + request.toString())
-
             Response response = client.newCall(request).execute();
-            println(response)
+
             if (response == null || response.body() == null ) return null;
             InputStream is = response.body().byteStream();
             BufferedReader reader = new BufferedReader(new InputStreamReader(is))

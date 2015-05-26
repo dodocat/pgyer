@@ -5,6 +5,7 @@ apply plugin: 'signing'
 group = 'org.quanqi'
 archivesBaseName = 'pgyer'
 version = '0.1.1'
+sourceCompatibility = 1.6
 
 repositories {
     mavenCentral()
