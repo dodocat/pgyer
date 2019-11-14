@@ -23,7 +23,10 @@ apply plugin: 'org.quanqi.pgyer'
 
 pgyer {
     _api_key = ""
-    uKey = ""
+    // (必填)应用安装方式，值为(2,3)。2：密码安装，3：邀请安装
+    buildInstallType = ""
+    // (必填) 设置App安装密码
+    buildPassword = ""
 }
 
 apks {
