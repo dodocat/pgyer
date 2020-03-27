@@ -14,7 +14,7 @@ import org.json.JSONObject
 import java.util.concurrent.TimeUnit
 
 class PgyerTask extends DefaultTask {
-    private final String API_END_POINT = "http://www.pgyer.com/apiv1"
+    private final String API_END_POINT = "http://www.pgyer.com/apiv2"
 
     void upload(Project project, List<Apk> apks) {
         String endPoint = getEndPoint(project)
@@ -32,10 +32,13 @@ class PgyerTask extends DefaultTask {
     }
 
     private String getEndPoint(Project project) {
-        String uKey = project.pgyer.uKey
         String _api_key = project.pgyer._api_key
-        if (uKey == null || _api_key == null) {
-            throw new GradleException("uKey or apiKey is missing")
+        String buildInstallType = project.pgyer.buildInstallType
+        String buildPassword = project.pgyer.buildPassword
+        if (_api_key == null
+                || buildInstallType == null
+                || buildPassword == null) {
+            throw new GradleException("apiKey, buildInstallType or buildPassword is missing")
         }
         String endPoint = API_END_POINT + "/app/upload"
         return endPoint
@@ -53,7 +56,8 @@ class PgyerTask extends DefaultTask {
 
 
             multipartBuilder.addFormDataPart("_api_key", new String(project.pgyer._api_key))
-            multipartBuilder.addFormDataPart("uKey", new String(project.pgyer.uKey))
+            multipartBuilder.addFormDataPart("buildInstallType", new String(project.pgyer.buildInstallType))
+            multipartBuilder.addFormDataPart("buildPassword", new String(project.pgyer.buildPassword))
 
 
             multipartBuilder.addFormDataPart("file",
@@ -75,7 +79,7 @@ class PgyerTask extends DefaultTask {
 
             Response response = client.newCall(request).execute();
 
-            if (response == null || response.body() == null ) return null;
+            if (response == null || response.body() == null) return null;
             InputStream is = response.body().byteStream();
             BufferedReader reader = new BufferedReader(new InputStreamReader(is))
             JSONObject json = new JSONObject(reader.readLine())
